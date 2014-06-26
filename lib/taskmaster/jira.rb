@@ -11,7 +11,21 @@ module Taskmaster
     }
 
     def self.find(key)
-      Issue.new(request(:get, "issue/#{key}"))
+      response = request(:get, "issue/#{key}")
+      if response.has_key?('errorMessages')
+        nil
+      else
+        Issue.new()
+      end
+    end
+
+    def self.extract_issue_key(str, *projects)
+      key = /#{projects.join('|')}-\d+/i.match(str).to_s
+      if key.empty?
+        nil
+      else
+        key.upcase
+      end
     end
 
     def self.search(jql)
