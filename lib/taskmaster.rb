@@ -1,6 +1,7 @@
 module Taskmaster
 end
 
-require "taskmaster/version"
 require "taskmaster/config"
+require "taskmaster/heroku"
 require "taskmaster/jira"
+require "taskmaster/version"
