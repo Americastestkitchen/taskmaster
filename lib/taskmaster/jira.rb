@@ -20,7 +20,7 @@ module Taskmaster
     end
 
     def self.extract_issue_key(str, *projects)
-      key = /#{projects.join('|')}-\d+/i.match(str).to_s
+      key = /(#{projects.join('|')})-\d+/i.match(str).to_s
       if key.empty?
         nil
       else
