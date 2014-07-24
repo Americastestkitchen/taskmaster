@@ -15,7 +15,7 @@ module Taskmaster
       if response.has_key?('errorMessages')
         nil
       else
-        Issue.new()
+        Issue.new(response)
       end
     end
 
