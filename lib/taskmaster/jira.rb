@@ -42,15 +42,20 @@ module Taskmaster
     end
 
     def self.transition_all_by_status(current_status, target_status, project = nil)
+      errors = []
       find_by_status(current_status, project).each do |issue|
-        issue.transition!(target_status)
+        if issue.transition!(target_status).nil?
+          errors << issue.key
+        end
       end
+      errors
     end
 
     def self.request(verb, url, options = {})
       options.merge!(basic_auth: CREDENTIALS)
       response = HTTParty.send(verb, DOMAIN + url, options)
-      if !response.body.nil?
+
+      if !response.body.nil? and response.code >= 200 and response.code <= 209
         JSON.parse(response.body)
       end
     end
