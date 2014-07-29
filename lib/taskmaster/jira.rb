@@ -60,7 +60,8 @@ module Taskmaster
       # POST, for proper error handling
       if verb == :post and response.code >= 200 and response.code <= 209
         true
-      else if verb == :get and !response.body.nil? and response.code >= 200 and response.code <= 209
+      end
+      if verb == :get and !response.body.nil? and response.code >= 200 and response.code <= 209
         JSON.parse(response.body)
       end
     end
