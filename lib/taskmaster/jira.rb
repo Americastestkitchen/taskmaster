@@ -59,10 +59,9 @@ module Taskmaster
       # Thus, when we make this request, this method should return "true" on a successful
       # POST, for proper error handling
       if verb == :post and response.code >= 200 and response.code <= 209
-        true
-      end
-      if verb == :get and !response.body.nil? and response.code >= 200 and response.code <= 209
-        JSON.parse(response.body)
+        return true
+      elsif verb == :get and !response.body.nil? and response.code >= 200 and response.code <= 209
+        return JSON.parse(response.body)
       end
     end
   end
