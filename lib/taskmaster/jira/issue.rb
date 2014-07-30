@@ -15,7 +15,7 @@ module Taskmaster
         transitions = Taskmaster::JIRA.request(:get, "issue/#{@id}/transitions?expand=transition.fields")
         target_transition = transitions['transitions'].detect{|t| t['name'] =~ /#{Regexp.quote(transition_name)}/i}
         if target_transition.nil?
-          return false
+          return nil
         end
         Taskmaster::JIRA.request(:post, "issue/#{@id}/transitions", body: {transition: {id: target_transition['id']}}.to_json, headers: {'Content-Type' => 'application/json'})
       end
