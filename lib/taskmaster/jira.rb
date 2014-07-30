@@ -55,13 +55,10 @@ module Taskmaster
       options.merge!(basic_auth: CREDENTIALS)
       response = HTTParty.send(verb, DOMAIN + url, options)
 
-      # When we POST the transition change, there is no response body (probably)
-      # Thus, when we make this request, this method should return "true" on a successful
-      # POST, for proper error handling
       if verb == :post and response.code >= 200 and response.code <= 209
-        return true
+        true
       elsif verb == :get and !response.body.nil? and response.code >= 200 and response.code <= 209
-        return JSON.parse(response.body)
+        JSON.parse(response.body)
       end
     end
   end
