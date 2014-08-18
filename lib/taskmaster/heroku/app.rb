@@ -41,7 +41,7 @@ module Taskmaster
           check(branch != 'master', "Deploying non-master branch #{branch}")
         end
 
-        check(self.class.needs_migration?, "#{@app_name} needs a migration")
+        self.class.check(self.class.needs_migration?, "#{@app_name} needs a migration")
 
         if Taskmaster::Config::deploy.needs_prepare
           Taskmaster::Heroku.prepare_deploy
