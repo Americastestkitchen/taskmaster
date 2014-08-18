@@ -31,6 +31,9 @@ module Taskmaster
             "#{config_var}='#{config_value}'"
           end
 
+          # Set up the hosts so that the links will work
+          config << "QA_HOST=" + @app_name + ".herokuapp.com"
+
           %x[heroku config:set #{config.join(' ')} -a #{@app_name}]
         end
       end
