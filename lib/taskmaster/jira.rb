@@ -1,6 +1,5 @@
 require 'httparty'
 require 'taskmaster/jira/issue'
-require 'pry'
 
 module Taskmaster
   module JIRA
