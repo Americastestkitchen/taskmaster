@@ -47,6 +47,9 @@ module Taskmaster
           Taskmaster::Heroku.prepare_deploy
         end
 
+        puts "= Deploying #{@app_name} (#{Taskmaster::Heroku.current_branch})..."
+        puts `git push #{remote} #{current_branch}:master -f`
+
         if /#{Taskmaster::Config.heroku.production_pattern}/.match(@app_name)
           Taskmaster::Config.jira.project_keys.each { |key|
             Taskmaster::JIRA.transition_all_by_status('Ready To Merge', 'Merged To Master', key)
