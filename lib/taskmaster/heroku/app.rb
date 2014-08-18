@@ -48,7 +48,7 @@ module Taskmaster
         end
 
         puts "= Deploying #{@app_name} (#{Taskmaster::Heroku.current_branch})..."
-        puts `git push #{remote} #{current_branch}:master -f`
+        puts `git push #{@app_name} #{Taskmaster::Heroku.current_branch}:master -f`
 
         if /#{Taskmaster::Config.heroku.production_pattern}/.match(@app_name)
           Taskmaster::Config.jira.project_keys.each { |key|
