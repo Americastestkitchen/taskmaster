@@ -47,7 +47,7 @@ module Taskmaster
           Taskmaster::Heroku.prepare_deploy
         end
 
-        if /#{Taskmaster::Config.heroku.production_pattern}/.match(apps.first)
+        if /#{Taskmaster::Config.heroku.production_pattern}/.match(@app_name)
           Taskmaster::Config.jira.project_keys.each { |key|
             Taskmaster::JIRA.transition_all_by_status('Ready To Merge', 'Merged To Master', key)
           }
