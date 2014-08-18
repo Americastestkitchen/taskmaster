@@ -35,7 +35,7 @@ module Taskmaster
       @deploy_prepared = true
     end
 
-    def self.deploy(*app_names, standard_master=false)
+    def self.deploy(*app_names, standard_master = false)
       app_names.map do |remote|
         Thread.new {
           app = App.new(remote)
