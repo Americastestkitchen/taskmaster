@@ -43,10 +43,14 @@ module Taskmaster
 
         check(needs_migration?, "#{@app_name} needs a migration")
 
-        Taskmaster::Heroku.prepare_deploy
+        if Taskmaster::Config::deploy.needs_prepare
+          Taskmaster::Heroku.prepare_deploy
+        end
 
         if /#{Taskmaster::Config.heroku.production_pattern}/.match(apps.first)
-          Taskmaster::JIRA.transition_all_by_status('Ready To Merge', 'Merged To Master', project=Taskmaster::Config.jira.project_key)
+          Taskmaster::Config.jira.project_keys.each { |key|
+            Taskmaster::JIRA.transition_all_by_status('Ready To Merge', 'Merged To Master', key)
+          }
         end
       end
 

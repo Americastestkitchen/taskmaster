@@ -42,6 +42,15 @@ module Taskmaster
           app.deploy(standard_master)
         }
       end.each{ |t| t.join }
+
+      if `git log --oneline -1` =~ 'Assets Manifest updated. [ci skip]'
+        puts '= Removing asset manifest commit'
+        Bundler.with_clean_env do
+          %x[
+            git reset --hard HEAD~1
+          ]
+        end
+      end
     end
   end
 end
