@@ -41,9 +41,12 @@ module Taskmaster
     end
 
     def self.transition_all_by_status(current_status, target_status, project = nil)
+      errors = []
       find_by_status(current_status, project).each do |issue|
-        issue.transition!(target_status)
+        if !issue.transition!(target_status)
+          errors << issue.key
       end
+      errors
     end
 
     def self.request(verb, url, options = {})
@@ -51,6 +54,13 @@ module Taskmaster
       response = HTTParty.send(verb, DOMAIN + url, options)
       if !response.body.nil?
         JSON.parse(response.body)
+      elsif verb == :post and response.code >= 200 and response.code <= 204
+        # This case covers successful post requests that do not have a response body
+        # This is the case for successful issue transitions (and other issues that we
+        # haven't bothered to implement)
+        # TODO: Maybe pass the entire response object back to the calling method and
+        #       have each method decide what to return?
+        true
       end
     end
   end
