@@ -45,6 +45,7 @@ module Taskmaster
       find_by_status(current_status, project).each do |issue|
         if !issue.transition!(target_status)
           errors << issue.key
+        end
       end
       errors
     end
