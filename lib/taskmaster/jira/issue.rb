@@ -1,5 +1,3 @@
-require 'pry'
-
 module Taskmaster
   module JIRA
     class Issue
