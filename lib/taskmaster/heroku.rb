@@ -67,6 +67,10 @@ module Taskmaster
           end
       end
 
+      if Taskmaster::Config::deploy.needs_prepare
+          Taskmaster::Heroku.prepare_deploy
+      end
+
       apps.map do |app|
         Thread.new {
           app.deploy()

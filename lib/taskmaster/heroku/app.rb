@@ -39,10 +39,6 @@ module Taskmaster
       end
 
       def deploy()
-        if Taskmaster::Config::deploy.needs_prepare
-          Taskmaster::Heroku.prepare_deploy
-        end
-
         puts "= Deploying #{@app_name} (#{Taskmaster::Heroku.current_branch})..."
         puts `git push #{@app_name} #{Taskmaster::Heroku.current_branch}:master -f`
       end
