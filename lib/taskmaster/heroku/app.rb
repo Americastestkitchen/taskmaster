@@ -38,54 +38,13 @@ module Taskmaster
         end
       end
 
-      def deploy(standard_master = false)
-        if standard_master
-          branch = Taskmaster::Heroku.current_branch
-          self.class.check(branch != 'master', "Deploying non-master branch #{branch}")
-        end
-
-        self.class.check(needs_migration?, "#{@app_name} needs a migration")
-        is_prod = /#{Taskmaster::Config.heroku.production_pattern}/.match(@app_name)
-
-        if is_prod
-          tickets = []
-          Taskmaster::Config.jira.project_keys.each { |project| 
-            tickets = Taskmaster::JIRA.find_by_status('Merged To Master', project).map(&:key)
-          }
-          tickets.flatten!
-          if tickets.empty?
-            self.class.check(true, "No tickets found in Merged to Master")
-          else
-            puts "\nThe following tickets are about to be deployed: "
-            puts "#{'* ' + tickets.join('\n* ')}"
-            sefl.class.check(true, "The above tickets will be deployed")
-          end
-        end
-
-
+      def deploy()
         if Taskmaster::Config::deploy.needs_prepare
           Taskmaster::Heroku.prepare_deploy
         end
 
         puts "= Deploying #{@app_name} (#{Taskmaster::Heroku.current_branch})..."
         puts `git push #{@app_name} #{Taskmaster::Heroku.current_branch}:master -f`
-
-        errors = []
-        if is_prod
-          Taskmaster::Config.jira.project_keys.each { |key|
-            errors << Taskmaster::JIRA.transition_all_by_status('Merged To Master', 'Deployed', key)
-          }
-          errors.flatten!
-          if errors.empty?
-            puts "\nCongratulations! All #{Taskmaster::Config.jira.project_keys.join("/")} tickets in Merged To Master have been moved to Deployed in JIRA!"
-            puts "\n Make sure to move any tickets from other projects manually, if there are any!"
-          else
-            puts "\nWARNING! Not all tickets in Merged To Master were successfully moved to Deployed!"
-            puts "\nMake sure to manually move the following tickets: "
-            failed_tickets = '* ' + errors.join("\n* ")
-            puts "#{failed_tickets}"
-          end
-        end
       end
 
       def destroy!(credentials = nil)
@@ -97,6 +56,10 @@ module Taskmaster
       def needs_migration?
         files = `git diff #{@app_name}/master..#{Taskmaster::Heroku.current_branch} --name-only`
         Taskmaster::Config.git.migration_dirs.any?{|dirname| files =~ /#{Regexp.quote(dirname)}/}
+      end
+
+      def is_prod?
+        /#{Taskmaster::Config.heroku.production_pattern}/.match(@app_name)
       end
 
       private
