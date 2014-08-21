@@ -31,23 +31,16 @@ module Taskmaster
             "#{config_var}='#{config_value}'"
           end
 
+          # Set up the hosts so that the links will work
+          config << "QA_HOST=" + @app_name + ".herokuapp.com"
+
           %x[heroku config:set #{config.join(' ')} -a #{@app_name}]
         end
       end
 
-      def deploy(standard_master = false)
-        if standard_master
-          branch = Taskmaster::Heroku.current_branch
-          check(branch != 'master', "Deploying non-master branch #{branch}")
-        end
-
-        check(needs_migration?, "#{@app_name} needs a migration")
-
-        Taskmaster::Heroku.prepare_deploy
-
-        if /#{Taskmaster::Config.heroku.production_pattern}/.match(apps.first)
-          Taskmaster::JIRA.transition_all_by_status('Ready To Merge', 'Merged To Master', project=Taskmaster::Config.jira.project_key)
-        end
+      def deploy()
+        puts "= Deploying #{@app_name} (#{Taskmaster::Heroku.current_branch})..."
+        puts `git push #{@app_name} #{Taskmaster::Heroku.current_branch}:master -f`
       end
 
       def destroy!(credentials = nil)
@@ -56,9 +49,13 @@ module Taskmaster
         response.code == 200
       end
 
-      def self.needs_migration?
+      def needs_migration?
         files = `git diff #{@app_name}/master..#{Taskmaster::Heroku.current_branch} --name-only`
         Taskmaster::Config.git.migration_dirs.any?{|dirname| files =~ /#{Regexp.quote(dirname)}/}
+      end
+
+      def is_prod?
+        /#{Taskmaster::Config.heroku.production_pattern}/.match(@app_name)
       end
 
       private
