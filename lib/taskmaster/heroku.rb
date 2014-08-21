@@ -64,7 +64,7 @@ module Taskmaster
       if is_prod_deploy
         tickets = []
           Taskmaster::Config.jira.project_keys.each { |project| 
-            tickets = Taskmaster::JIRA.find_by_status('Merged To Master', project).map(&:key)
+            tickets << Taskmaster::JIRA.find_by_status('Merged To Master', project).map(&:key)
           }
           tickets.flatten!
           if tickets.empty?
