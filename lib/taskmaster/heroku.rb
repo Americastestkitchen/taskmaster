@@ -8,7 +8,7 @@ module Taskmaster
 
     def self.app_name
       # Heroku apps are limited to 30 char.
-      @app_name ||= current_branch.downcase[0...27] + '-qa'
+      @app_name ||= current_branch.downcase[0...27].gsub(/[^\w\d-]/, "") + '-qa'
     end
 
     def self.credentials
