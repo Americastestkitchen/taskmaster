@@ -24,8 +24,10 @@ module Taskmaster
       @deploy_prepared ||= false
       if !@deploy_prepared
         puts '= Precompiling assets...'
+        # Remove all other asset manifest files before running the precompile
         Bundler.with_clean_env do
           %x[
+            rm public/assets/manifest-*
             foreman run bundle exec rake RAILS_ENV=production RAILS_GROUPS=assets assets:precompile
             mv public/assets/manifest-*.json public/assets/manifest-1.json
             git commit public/assets/manifest-1.json -m 'Assets Manifest updated. [ci skip]'
