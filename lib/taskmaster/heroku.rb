@@ -64,14 +64,16 @@ module Taskmaster
       if is_prod_deploy
         tickets = []
           Taskmaster::Config.jira.project_keys.each { |project| 
-            tickets = Taskmaster::JIRA.find_by_status('Merged To Master', project).map(&:key)
+            tickets << Taskmaster::JIRA.find_by_status('Merged To Master', project).map{|issue| 
+              issue.key + " : " + issue.title
+            }
           }
           tickets.flatten!
           if tickets.empty?
             App.check(true, "No tickets found in Merged to Master")
           else
             puts "\nThe following tickets are about to be deployed: "
-            puts "#{'* ' + tickets.join('\n* ')}"
+            puts '* ' + tickets.join("\n* ")
             App.check(true, "The above tickets will be deployed")
           end
       end
@@ -98,8 +100,7 @@ module Taskmaster
         else
           puts "\nWARNING! Not all tickets in Merged To Master were successfully moved to Deployed!"
           puts "\nMake sure to manually move the following tickets: "
-          failed_tickets = '* ' + errors.join("\n* ")
-          puts "#{failed_tickets}"
+          puts '* ' + errors.join("\n* ")
         end
       end
 
