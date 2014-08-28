@@ -79,12 +79,19 @@ module Taskmaster
       end
 
       if Taskmaster::Config::deploy.needs_prepare
+          start_prepare = Time.new
           Taskmaster::Heroku.prepare_deploy
+          end_prepare = Time.new
+
+          puts "\nPrepare Deploy took #{end_prepare - start_prepare} seconds"
       end
 
       apps.map do |app|
         Thread.new {
+          start_deploy = Time.new
           app.deploy()
+          end_deploy = Time.new
+          puts "\nDeploy of #{app.app_name} took #{end_deploy - start_deploy} seconds"
         }
       end.each{ |t| t.join }
 
@@ -101,15 +108,6 @@ module Taskmaster
           puts "\nWARNING! Not all tickets in Merged To Master were successfully moved to Deployed!"
           puts "\nMake sure to manually move the following tickets: "
           puts '* ' + errors.join("\n* ")
-        end
-      end
-
-      if `git log --oneline -1` =~ /Assets Manifest updated\. \[ci skip\]/
-        puts '= Removing asset manifest commit'
-        Bundler.with_clean_env do
-          %x[
-            git reset --hard HEAD~1
-          ]
         end
       end
     end
