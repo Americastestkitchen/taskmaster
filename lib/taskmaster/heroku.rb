@@ -79,19 +79,12 @@ module Taskmaster
       end
 
       if Taskmaster::Config::deploy.needs_prepare
-          start_prepare = Time.new
           Taskmaster::Heroku.prepare_deploy
-          end_prepare = Time.new
-
-          puts "\nPrepare Deploy took #{end_prepare - start_prepare} seconds"
       end
 
       apps.map do |app|
         Thread.new {
-          start_deploy = Time.new
           app.deploy()
-          end_deploy = Time.new
-          puts "\nDeploy of #{app.app_name} took #{end_deploy - start_deploy} seconds"
         }
       end.each{ |t| t.join }
 
