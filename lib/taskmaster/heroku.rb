@@ -37,6 +37,7 @@ module Taskmaster
           %x[
             foreman run bundle exec rake RAILS_ENV=production RAILS_GROUPS=assets assets:precompile
             mv public/assets/manifest-*.json public/assets/manifest-1.json
+            git add public/assets/manifest-1.json
             git commit public/assets/manifest-1.json -m 'Assets Manifest updated. [ci skip]'
           ]
         end
