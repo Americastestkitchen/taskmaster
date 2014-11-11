@@ -1,0 +1,49 @@
+#!/usr/bin/env ruby
+# This is a commit-msg hook intended to automatically prepend
+# the current branch's ticket number to a commit message, if there is one
+# This is intended for use with smart commits
+#
+# The projects recognized as valid are pulled from this repo's taskmaster.yaml
+require 'YAML'
+
+branch_name = `git branch | grep '*' | sed 's/* //'`
+
+# We don't need to actually require taskmaster for this tiny shell script
+# Let's just load the valid project names
+taskmaster_file = File.expand_path(File.dirname(__FILE__) + "../../../.taskmaster.yaml")
+
+project_keys = YAML.load_file(taskmaster_file)['jira']['project_keys']
+
+# Now, check to see if the branch name contains a project key
+
+issue_key = /(#{project_keys.join('|')})-\d+/i.match(branch_name).to_s
+issue_key = if issue_key.empty?
+  nil
+else
+  issue_key.upcase
+end
+
+# issue_key is now the JIRA ticket that this branch is associated with
+# So if it is not nil, prepend it to the commit message with the format
+# RTB-123 'rest of comment'
+
+# ARGV[0] is the message file
+filename = ARGV[0]
+
+if issue_key
+  prepend_str = issue_key + " "
+  
+  new_contents = ""
+  File.open(filename, 'r') do |fd|
+    contents = fd.read
+    new_contents = prepend_str << contents
+  end
+
+  File.open(filename, 'w') do |fd|
+    fd.write(new_contents)
+  end
+
+  puts "Automatically prepended #{issue_key} to commit message"
+else
+  puts "No issue key was found, smart commit failed"
+end
