@@ -57,6 +57,14 @@ module Taskmaster
         end
       end
 
+      def remove_collaborators(*collaborators)
+        Bundler.with_clean_env do
+          collaborators.each do |collaborator|
+            puts `heroku sharing:remove #{collaborator} -a #{@app_name}`
+          end
+        end
+      end
+
       def needs_migration?
         files = `git diff #{@app_name}/master..#{Taskmaster::Heroku.current_branch} --name-only`
         Taskmaster::Config.git.migration_dirs.any?{|dirname| files =~ /#{Regexp.quote(dirname)}/}
