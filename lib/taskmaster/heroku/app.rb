@@ -39,8 +39,8 @@ module Taskmaster
       end
 
       def deploy()
-        puts "= Deploying #{@app_name} (#{Taskmaster::Heroku.current_branch})..."
-        puts `git push #{@app_name} #{Taskmaster::Heroku.current_branch}:master -f`
+        puts "= Deploying #{@app_name} (#{Taskmaster.current_branch})..."
+        puts `git push #{@app_name} #{Taskmaster.current_branch}:master -f`
       end
 
       def destroy!(credentials = nil)
@@ -66,7 +66,7 @@ module Taskmaster
       end
 
       def needs_migration?
-        files = `git diff #{@app_name}/master..#{Taskmaster::Heroku.current_branch} --name-only`
+        files = `git diff #{@app_name}/master..#{Taskmaster.current_branch} --name-only`
         Taskmaster::Config.git.migration_dirs.any?{|dirname| files =~ /#{Regexp.quote(dirname)}/}
       end
 

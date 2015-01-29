@@ -1,14 +1,11 @@
 require 'taskmaster/heroku/app'
+require 'taskmaster/heroku/database'
 
 module Taskmaster
   module Heroku
-    def self.current_branch
-      @current_branch ||= `git symbolic-ref HEAD --short`.chomp
-    end
-
     def self.app_name
       # Heroku apps are limited to 30 char.
-      @app_name ||= current_branch.downcase[0...27].gsub(/[^\w\d-]/, "") + '-qa'
+      @app_name ||= Taskmaster.current_branch.downcase[0...27].gsub(/[^\w\d-]/, "") + '-qa'
     end
 
     def self.credentials
@@ -37,9 +34,10 @@ module Taskmaster
           %x[
             foreman run bundle exec rake RAILS_ENV=production RAILS_GROUPS=assets assets:precompile
             mv public/assets/manifest-*.json public/assets/manifest-1.json
-            git commit public/assets/manifest-1.json -m 'Assets Manifest updated. [ci skip]'
           ]
         end
+        Taskmaster.repo.add('public/assets/manifest-1.json')
+        Taskmaster.repo.commit('Assets Manifest updated. [ci skip]')
       end
       @deploy_prepared = true
     end
@@ -102,6 +100,10 @@ module Taskmaster
           puts "\nMake sure to manually move the following tickets: "
           puts '* ' + errors.join("\n* ")
         end
+      end
+
+      if block_given?
+        yield
       end
     end
   end
