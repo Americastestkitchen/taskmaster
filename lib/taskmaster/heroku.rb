@@ -1,5 +1,4 @@
 require 'taskmaster/heroku/app'
-require 'taskmaster/heroku/database'
 
 module Taskmaster
   module Heroku
