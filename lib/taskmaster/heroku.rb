@@ -44,7 +44,7 @@ module Taskmaster
     def self.deploy(*app_names, standard_master: false)
       # Do this check in the main deploy because it will be the same for all apps
       if standard_master
-        App.check(current_branch != 'master', "Deploying non-master branch #{current_branch}")
+        App.check(Taskmaster.current_branch != 'master', "Deploying non-master branch #{current_branch}")
       end
 
       # Initialize the apps so that more checks can be made
