@@ -16,31 +16,6 @@ module Taskmaster
       end
     end
 
-    def self.prepare_deploy
-      @deploy_prepared ||= false
-      if !@deploy_prepared
-        puts '= Precompiling assets...'
-
-        # Remove all other asset manifest files before running the precompile,
-        # but only if there are any, in order to ensure that the asset manifest updates
-        if !Dir.glob('public/assets/manifest-*').empty?
-          Bundler.with_clean_env do
-            `rm public/assets/manifest-*`
-          end
-        end
-
-        Bundler.with_clean_env do
-          %x[
-            foreman run bundle exec rake RAILS_ENV=production RAILS_GROUPS=assets assets:precompile
-            mv public/assets/manifest-*.json public/assets/manifest-1.json
-          ]
-        end
-        Taskmaster.repo.add('public/assets/manifest-1.json')
-        Taskmaster.repo.commit('Assets Manifest updated. [ci skip]')
-      end
-      @deploy_prepared = true
-    end
-
     def self.deploy(*app_names, standard_master: false)
       # Do this check in the main deploy because it will be the same for all apps
       if standard_master
@@ -60,8 +35,8 @@ module Taskmaster
       # If it is, get a list of tickets that are going to be deployed for confirmation
       if is_prod_deploy
         tickets = []
-          Taskmaster::Config.jira.project_keys.each { |project| 
-            tickets << Taskmaster::JIRA.find_by_status('Merged To Master', project).map{|issue| 
+          Taskmaster::Config.jira.project_keys.each { |project|
+            tickets << Taskmaster::JIRA.find_by_status('Merged To Master', project).map{|issue|
               issue.key + " : " + issue.title
             }
           }
@@ -73,10 +48,6 @@ module Taskmaster
             puts '* ' + tickets.join("\n* ")
             App.check(true, "The above tickets will be deployed")
           end
-      end
-
-      if Taskmaster::Config::deploy.needs_prepare
-          Taskmaster::Heroku.prepare_deploy
       end
 
       apps.map do |app|
