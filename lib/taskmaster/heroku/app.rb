@@ -52,7 +52,7 @@ module Taskmaster
       def add_collaborators(*collaborators)
         Bundler.with_clean_env do
           collaborators.each do |collaborator|
-            puts `heroku sharing:add #{collaborator} -a #{@app_name}`
+            puts `heroku access:add #{collaborator} -a #{@app_name}`
           end
         end
       end
@@ -60,7 +60,7 @@ module Taskmaster
       def remove_collaborators(*collaborators)
         Bundler.with_clean_env do
           collaborators.each do |collaborator|
-            puts `heroku sharing:remove #{collaborator} -a #{@app_name}`
+            puts `heroku access:remove #{collaborator} -a #{@app_name}`
           end
         end
       end
