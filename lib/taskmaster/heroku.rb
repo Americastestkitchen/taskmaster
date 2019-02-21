@@ -36,6 +36,7 @@ module Taskmaster
           ]
         end
         Taskmaster.repo.add('public/assets/manifest-1.json')
+        Taskmaster.repo.add('public/assets/packs/manifest.json')
         Taskmaster.repo.commit('Assets Manifest updated. [ci skip]')
       end
       @deploy_prepared = true
