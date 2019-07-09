@@ -11,7 +11,7 @@ module Taskmaster
 
     def self.find(key)
       response = request(:get, "issue/#{key}")
-      if response.has_key?('errorMessages')
+      if !response || response.has_key?('errorMessages')
         nil
       else
         Issue.new(response)
@@ -29,7 +29,11 @@ module Taskmaster
 
     def self.search(jql)
       response = request(:get, 'search', query: {jql: jql})
-      response['issues'].map{|issue| Issue.new(issue)}
+      if !response
+        []
+      else
+        response['issues'].map{|issue| Issue.new(issue)}
+      end
     end
 
     def self.find_by_status(status, project = nil)
@@ -37,7 +41,7 @@ module Taskmaster
       if !project.nil?
         query += " AND project = #{project}"
       end
-      search(query) 
+      search(query)
     end
 
     def self.transition_all_by_status(current_status, target_status, project = nil)
@@ -54,7 +58,12 @@ module Taskmaster
       options.merge!(basic_auth: CREDENTIALS)
       response = HTTParty.send(verb, DOMAIN + url, options)
       if !response.body.nil?
-        JSON.parse(response.body)
+        begin
+          JSON.parse(response.body)
+        rescue
+          puts "JSON parsing error"
+          false
+        end
       elsif verb == :post and response.code >= 200 and response.code <= 204
         # This case covers successful post requests that do not have a response body
         # This is the case for successful issue transitions (and other issues that we
