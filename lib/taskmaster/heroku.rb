@@ -42,6 +42,42 @@ module Taskmaster
       @deploy_prepared = true
     end
 
+    # JONATRON: I don't know if you have a Taskmaster::Test class setup or something
+    # as part of your magic dashboard. If you do, can you move this method in there?
+    # Thanks! You're the bomb!
+    def self.javascript_coverage
+      data = {}
+      data['current_sha'] = `git rev-parse HEAD`.chomp # So we can associate coverage to commits
+
+      # The rake task currently doesn't 'work' and would require some effort to make work.
+      # This doesn't exactly work either (since the tests )
+      raw_coverage = `bundle exec teaspoon --suite honeymoon --coverage taskmaster`.split("\n")
+
+      # The coverage reporter we use with teaspoon/istanbul is "text-summary"
+      # because the json reports don't give us something concise
+      # If you want more granular data, switch the coverage report to "json-summary"
+      array = raw_coverage.slice(raw_array.count - 5, 4)
+
+      coverage = {}
+
+      # TODO: Write this better.
+      begin
+        coverage['statement'] = array[0].match(/:\s([\d\.]+)%/)[1]
+        coverage['branch'] = array[1].match(/:\s([\d\.]+)%/)[1]
+        coverage['function'] = array[2].match(/:\s([\d\.]+)%/)[1]
+        coverage['line'] = array[3].match(/:\s([\d\.]+)%/)[1]
+
+        data['coverage'] = coverage
+
+        HTTParty.post('http://jonathansmagicendpoint',
+                      body: data.to_json,
+                      headers: {'Content-Type' => 'application/json'})
+      rescue NoMethodError
+        puts 'WARNING! FAILED TO GENERATE COVERAGE REPORT!'
+        # Remember to actually fail or something
+      end
+    end
+
     def self.deploy(*app_names, standard_master: false)
       # Do this check in the main deploy because it will be the same for all apps
       if standard_master
@@ -88,6 +124,7 @@ module Taskmaster
 
       errors = []
       if is_prod_deploy
+        # Transition the deployed tickets in JIRA
         Taskmaster::Config.jira.project_keys.each { |key|
           errors << Taskmaster::JIRA.transition_all_by_status('Pending Release', 'Deployed', key)
         }
@@ -100,6 +137,8 @@ module Taskmaster
           puts "\nMake sure to manually move the following tickets: "
           puts '* ' + errors.join("\n* ")
         end
+
+        Taskmaster::Heroku.javascript_coverage
       end
 
       if block_given?
