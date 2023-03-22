@@ -59,21 +59,21 @@ module Taskmaster
       is_prod_deploy = apps.any? { |app| app.is_prod? }
 
       # If it is, get a list of tickets that are going to be deployed for confirmation
-      if is_prod_deploy
-        tickets = []
-          Taskmaster::Config.jira.project_keys.each { |project|
-            tickets << Taskmaster::JIRA.find_by_status('Pending Release', project).map{|issue|
-              issue.key + " : " + issue.title
-            }
-          }
-          tickets.flatten!
-          if tickets.empty?
-            App.check(true, "No tickets found in Pending Release")
-          else
-            puts "\nThe following tickets are about to be deployed: "
-            puts '* ' + tickets.join("\n* ")
-            App.check(true, "The above tickets will be deployed")
-          end
+      # if is_prod_deploy
+      #   tickets = []
+      #     Taskmaster::Config.jira.project_keys.each { |project|
+      #       tickets << Taskmaster::JIRA.find_by_status('Pending Release', project).map{|issue|
+      #         issue.key + " : " + issue.title
+      #       }
+      #     }
+      #     tickets.flatten!
+      #     if tickets.empty?
+      #       App.check(true, "No tickets found in Pending Release")
+      #     else
+      #       puts "\nThe following tickets are about to be deployed: "
+      #       puts '* ' + tickets.join("\n* ")
+      #       App.check(true, "The above tickets will be deployed")
+      #     end
       end
 
       if Taskmaster::Config::deploy.needs_prepare
