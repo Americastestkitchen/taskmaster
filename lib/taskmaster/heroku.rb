@@ -55,27 +55,6 @@ module Taskmaster
       # Doing these checks before Threads rear their ugly heads makes our lives easier
       apps.each{|app| App.check(app.needs_migration?, "#{app.app_name} needs a migration")}
 
-      # Check if this is a prod deployment
-      is_prod_deploy = apps.any? { |app| app.is_prod? }
-
-      # If it is, get a list of tickets that are going to be deployed for confirmation
-      # if is_prod_deploy
-      #   tickets = []
-      #     Taskmaster::Config.jira.project_keys.each { |project|
-      #       tickets << Taskmaster::JIRA.find_by_status('Pending Release', project).map{|issue|
-      #         issue.key + " : " + issue.title
-      #       }
-      #     }
-      #     tickets.flatten!
-      #     if tickets.empty?
-      #       App.check(true, "No tickets found in Pending Release")
-      #     else
-      #       puts "\nThe following tickets are about to be deployed: "
-      #       puts '* ' + tickets.join("\n* ")
-      #       App.check(true, "The above tickets will be deployed")
-      #     end
-      # end
-
       if Taskmaster::Config::deploy.needs_prepare
           Taskmaster::Heroku.prepare_deploy
       end
@@ -85,22 +64,6 @@ module Taskmaster
           app.deploy()
         }
       end.each{ |t| t.join }
-
-      errors = []
-      if is_prod_deploy
-        Taskmaster::Config.jira.project_keys.each { |key|
-          errors << Taskmaster::JIRA.transition_all_by_status('Pending Release', 'Deployed', key)
-        }
-        errors.flatten!
-        if errors.empty?
-          puts "\nCongratulations! All #{Taskmaster::Config.jira.project_keys.join("/")} tickets in Pending Release have been moved to Deployed in JIRA!"
-          puts "\n Make sure to move any tickets from other projects manually, if there are any!"
-        else
-          puts "\nWARNING! Not all tickets in Pending Release were successfully moved to Deployed!"
-          puts "\nMake sure to manually move the following tickets: "
-          puts '* ' + errors.join("\n* ")
-        end
-      end
 
       if block_given?
         yield
