@@ -74,7 +74,7 @@ module Taskmaster
       #       puts '* ' + tickets.join("\n* ")
       #       App.check(true, "The above tickets will be deployed")
       #     end
-      end
+      # end
 
       if Taskmaster::Config::deploy.needs_prepare
           Taskmaster::Heroku.prepare_deploy
