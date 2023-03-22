@@ -86,21 +86,21 @@ module Taskmaster
         }
       end.each{ |t| t.join }
 
-      errors = []
-      if is_prod_deploy
-        Taskmaster::Config.jira.project_keys.each { |key|
-          errors << Taskmaster::JIRA.transition_all_by_status('Pending Release', 'Deployed', key)
-        }
-        errors.flatten!
-        if errors.empty?
-          puts "\nCongratulations! All #{Taskmaster::Config.jira.project_keys.join("/")} tickets in Pending Release have been moved to Deployed in JIRA!"
-          puts "\n Make sure to move any tickets from other projects manually, if there are any!"
-        else
-          puts "\nWARNING! Not all tickets in Pending Release were successfully moved to Deployed!"
-          puts "\nMake sure to manually move the following tickets: "
-          puts '* ' + errors.join("\n* ")
-        end
-      end
+      # errors = []
+      # if is_prod_deploy
+      #   Taskmaster::Config.jira.project_keys.each { |key|
+      #     errors << Taskmaster::JIRA.transition_all_by_status('Pending Release', 'Deployed', key)
+      #   }
+      #   errors.flatten!
+      #   if errors.empty?
+      #     puts "\nCongratulations! All #{Taskmaster::Config.jira.project_keys.join("/")} tickets in Pending Release have been moved to Deployed in JIRA!"
+      #     puts "\n Make sure to move any tickets from other projects manually, if there are any!"
+      #   else
+      #     puts "\nWARNING! Not all tickets in Pending Release were successfully moved to Deployed!"
+      #     puts "\nMake sure to manually move the following tickets: "
+      #     puts '* ' + errors.join("\n* ")
+      #   end
+      # end
 
       if block_given?
         yield
